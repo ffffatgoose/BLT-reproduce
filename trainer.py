@@ -76,8 +76,8 @@ class Eval:
         color_white_num = 0
                 
         with torch.no_grad():         
-            for it, (x, y) in pbar:
-                x_cond = x.to(self.device)
+            for it, data_batch in pbar:
+                x_cond = data_batch['text'].to(self.device)
                 
                 if command["name"] == "random_generate":    
                     layouts = sample(model, x_cond[:, :1], steps=self.test_dataset.max_length,
@@ -88,7 +88,7 @@ class Eval:
                 elif command["name"] == "real_image":
                     layouts = x_cond.detach().cpu().numpy()
                 elif command["name"] == "reconstruction":
-                    logits, _ = model(x_cond)
+                    _, _,logits = model(x_cond)
                     probs = F.softmax(logits, dim=-1)
                     _, y = torch.topk(probs, k=1, dim=-1)
                     layouts = torch.cat((x_cond[:, :1], y[:, :, 0]), dim=1).detach().cpu().numpy()
